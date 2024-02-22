@@ -1,4 +1,4 @@
-namespace Homework.Server
+namespace Homework.Server.Data
 {
     public class WeatherForecast
     {
