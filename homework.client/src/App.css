@@ -42,8 +42,13 @@ th, td {
 .product-description {
     
 }
-
-.product-price{
+.spinner-container {
+    display: inline-flex;
+}
+.spinner-text{
+    margin: auto auto auto 1rem;
+}
+.product-price {
     margin-top: auto;
 }
 .input-size-medium {
@@ -55,11 +60,11 @@ th, td {
     }
 }
 
-@media(max-width:768px){
+@media(max-width:1000px){
     .products-parent {
         grid-template-columns: auto auto;
     }
     .input-size-medium {
-        width: 50%;
+        /*width: 50%;*/
     }
 }

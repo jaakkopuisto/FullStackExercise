@@ -1,8 +1,4 @@
-﻿using Homework.Server.Data;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using System.Security.Cryptography.Xml;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
 namespace Homework.Server.Controllers
@@ -11,42 +7,48 @@ namespace Homework.Server.Controllers
     [Route("[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly string _productsUrl;
-        private readonly IConfiguration _configuration;
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        private readonly string _productsUrl = "";
 
         private readonly ILogger<ProductsController> _logger;
 
         public ProductsController(ILogger<ProductsController> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _productsUrl = configuration["Dummyjson:products"];
-            _configuration = configuration;
+            _productsUrl = configuration["Dummyjson:products"] ?? "/errorPageUrl";
         }
 
-        [HttpGet(Name = "GetProducts")]
-        public async Task<Root> Get()
+        [HttpGet]
+        public async Task<RootProducts> Get()
         {
-            using var client = new HttpClient();
-            client.BaseAddress = new Uri(_configuration.GetValue<string>("Dummyjson:products")!);
-            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            var response = client.GetAsync(_productsUrl).Result;
-
-            using var contentStream = response.Content.ReadAsStreamAsync().Result;
-            if(contentStream != null)
+            try
             {
-                Root root = await System.Text.Json.JsonSerializer.DeserializeAsync<Root>(contentStream);
+                using var client = new HttpClient();
+                client.BaseAddress = new Uri(_productsUrl);
+                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
-                return root;
+                using (var response = await client.GetAsync(_productsUrl))
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) // Example for specific error handling
+                    {
+                        return new RootProducts(); // Would be best to show error page / message
+                    }
+                    else
+                    {
+                        response.EnsureSuccessStatusCode();
+
+                        var contentStream = response.Content.ReadAsStreamAsync().Result;
+
+                        return JsonSerializer.Deserialize<RootProducts>(contentStream) ?? new RootProducts();
+                    }
+                }
             }
-            else
+            catch(Exception ex)
             {
-                return null;
+                System.Diagnostics.Debug.WriteLine("Caught exception:");
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                _logger.LogTrace(ex, ex.Message);
+                return new RootProducts(); // Would be best to show error page / message
             }
-            
         }
     }
 }
