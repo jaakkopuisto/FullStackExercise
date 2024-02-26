@@ -1,15 +1,16 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 public class Product
 {
     [JsonPropertyName("id")]
     public required int Id { get; set; }
     [JsonPropertyName("title")]
-    public required string Title { get; set; }
+    public string? Title { get; set; }
     [JsonPropertyName("description")]
-    public required string Description { get; set; }
+    public string? Description { get; set; }
     [JsonPropertyName("price")]
-    public required int Price { get; set; }
+    public int? Price { get; set; }
     [JsonPropertyName("discountPercentage")]
     public double? DiscountPercentage { get; set; }
     [JsonPropertyName("rating")]

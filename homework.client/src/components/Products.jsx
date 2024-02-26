@@ -5,7 +5,7 @@ function Products() {
     const [currentProductData, setProductData] = useState();
     const [originalProductData, setOriginalProductData] = useState();
     const [isLoading, setLoading] = useState();
-    const [isEmpty, setEmpty] = useState(false);
+    const [isEmpty, setEmpty] = useState();
     const [error, setError] = useState();
 
     useEffect(() => {
@@ -26,7 +26,7 @@ function Products() {
         ? <p><em>Loading json data</em></p>
         : <div className="products-parent">
             {currentProductData.map((item) =>
-                <div key={ item.id } className="product-card">
+                <div key={item.id} className="product-card">
                     <div className="product-image-container">
                         <img className="product-img" src={item.images[0]}></img>
                     </div>
@@ -37,10 +37,11 @@ function Products() {
                 </div>
             )}
         </div>;
-    
+
+    // State handling
     if (isLoading) {
         return <div>
-            <Spinner elementType="h2" loadingText="Loading products..."></Spinner>
+            <Spinner loadingText="Loading products..."></Spinner>
         </div>
     }
     else if (isEmpty) {
@@ -113,7 +114,7 @@ function Products() {
                 setEmpty(true);
             }
         }
-        catch(err) {
+        catch (err) {
             setError(err);
         }
         finally {

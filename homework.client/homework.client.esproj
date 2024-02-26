@@ -12,7 +12,4 @@
     <None Remove="node_modules\**" />
     <TypeScriptConfiguration Remove="node_modules\**" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\hooks\" />
-  </ItemGroup>
 </Project>

@@ -20,34 +20,46 @@ namespace Homework.Server.Controllers
         [HttpGet]
         public async Task<RootProducts> Get()
         {
-            try
+            RootProducts rootProducts = HttpContext.Session.GetObject<RootProducts>("rootProducts");
+            if (rootProducts != null)
             {
-                using var client = new HttpClient();
-                client.BaseAddress = new Uri(_productsUrl);
-                client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-                using (var response = await client.GetAsync(_productsUrl))
+                return rootProducts;
+            }
+            else
+            {
+                try
                 {
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) // Example for specific error handling
-                    {
-                        return new RootProducts(); // Would be best to show error page / message
-                    }
-                    else
-                    {
-                        response.EnsureSuccessStatusCode();
+                    using var client = new HttpClient();
+                    client.BaseAddress = new Uri(_productsUrl);
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
-                        var contentStream = response.Content.ReadAsStreamAsync().Result;
+                    using (var response = await client.GetAsync(_productsUrl))
+                    {
+                        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) // Example for specific error handling
+                        {
+                            return new RootProducts(); // Would be best to return error page / message
+                        }
+                        else
+                        {
+                            response.EnsureSuccessStatusCode();
 
-                        return JsonSerializer.Deserialize<RootProducts>(contentStream) ?? new RootProducts();
+                            var contentStream = response.Content.ReadAsStreamAsync().Result;
+
+                            rootProducts = JsonSerializer.Deserialize<RootProducts>(contentStream) ?? new RootProducts();
+
+                            HttpContext.Session.SetObject("rootProducts", rootProducts);
+
+                            return rootProducts;
+                        }
                     }
                 }
-            }
-            catch(Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Caught exception:");
-                System.Diagnostics.Debug.WriteLine(ex.Message);
-                _logger.LogTrace(ex, ex.Message);
-                return new RootProducts(); // Would be best to show error page / message
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Caught exception:");
+                    System.Diagnostics.Debug.WriteLine(ex.Message);
+                    _logger.LogTrace(ex, ex.Message);
+                    return new RootProducts(); // Would be best to return error page / message
+                }
             }
         }
     }
