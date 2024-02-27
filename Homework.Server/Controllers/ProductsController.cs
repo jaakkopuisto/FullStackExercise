@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Homework.Server.Helpers;
+using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
 namespace Homework.Server.Controllers
@@ -20,7 +21,7 @@ namespace Homework.Server.Controllers
         [HttpGet]
         public async Task<RootProducts> Get()
         {
-            RootProducts rootProducts = HttpContext.Session.GetObject<RootProducts>("rootProducts");
+            RootProducts? rootProducts = HttpContext.Session.GetObject<RootProducts>("rootProducts");
             if (rootProducts != null)
             {
                 return rootProducts;
@@ -33,7 +34,7 @@ namespace Homework.Server.Controllers
                     client.BaseAddress = new Uri(_productsUrl);
                     client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 
-                    using (var response = await client.GetAsync(_productsUrl))
+                    using var response = await client.GetAsync(_productsUrl);
                     {
                         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) // Example for specific error handling
                         {
@@ -46,6 +47,8 @@ namespace Homework.Server.Controllers
                             var contentStream = response.Content.ReadAsStreamAsync().Result;
 
                             rootProducts = JsonSerializer.Deserialize<RootProducts>(contentStream) ?? new RootProducts();
+
+                            rootProducts.Products.ForEach(x => x.Description = Decoders.DecodeFromUtf16ToUtf8(x.Description));
 
                             HttpContext.Session.SetObject("rootProducts", rootProducts);
 
